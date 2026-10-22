@@ -3,6 +3,10 @@ import fs from "fs";
 
 import PairDropServer from "./server.js";
 import PairDropWsServer from "./ws-server.js";
+// Read dotenv
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Handle SIGINT
 process.on('SIGINT', () => {
@@ -34,8 +38,7 @@ process.on('unhandledRejection', (reason, promise) => {
 let conf = {};
 
 conf.debugMode = process.env.DEBUG_MODE === "true";
-
-conf.port = process.env.PORT || 3000;
+conf.port = process.env.PORT || 4000;
 
 conf.wsFallback = process.argv.includes('--include-ws-fallback') || process.env.WS_FALLBACK === "true";
 
@@ -183,4 +186,4 @@ if (!conf.signalingServer) {
     console.log("This instance does not include a signaling server. Clients on this instance connect to the following signaling server:", conf.signalingServer);
 }
 
-console.log('\nPairDrop is running on port', conf.port);
+console.log('\nNearShare is running on port', conf.port);
