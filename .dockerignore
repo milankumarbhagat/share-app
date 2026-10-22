@@ -11,3 +11,5 @@ pairdrop-cli
 Dockerfile
 rtc_config_example.json
 turnserver_example.conf
+.env
+deploy
