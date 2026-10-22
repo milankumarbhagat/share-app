@@ -1,0 +1,26 @@
+version: "8.2.0"
+
+compose:
+  files:
+    - .dockerdev/docker-compose.yml
+  project_name: pairdrop
+
+interaction:
+  sh:
+    description: Shell inside the app container
+    service: app
+    command: /bin/sh
+
+  npm:
+    description: Run npm commands inside the app container
+    service: app
+    command: npm
+    compose_run_options: [no-deps]
+
+  logs:
+    description: Follow the app container's logs
+    command: docker logs -f pairdrop
+
+provision:
+  - dip compose build
+  - dip up -d --wait

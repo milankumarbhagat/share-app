@@ -1,0 +1,89 @@
+# NearShare production stack: Caddy (HTTPS) -> NearShare, plus coturn as STUN/TURN server.
+# Setup guide: deploy/README.md
+
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    environment:
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # certificates, keep this volume
+      - caddy_config:/config
+    depends_on:
+      - nearshare
+
+  nearshare:
+    build:
+      context: ..
+    image: nearshare:latest
+    container_name: nearshare
+    restart: unless-stopped
+    # not published to the host, only reachable through Caddy
+    expose:
+      - "3000"
+    volumes:
+      - ./rtc_config.json:/home/node/app/rtc_config.json:ro
+    environment:
+      - PORT=3000
+      - RTC_CONFIG=/home/node/app/rtc_config.json
+      - RATE_LIMIT=1 # 1 = one reverse proxy (Caddy) in front, so the real client IP is used
+      - WS_FALLBACK=false
+      - DEBUG_MODE=false # true logs client IPs, keep false in production
+      # Optional About-page buttons, hidden unless set:
+      # - DONATION_BUTTON_ACTIVE=true
+      # - DONATION_BUTTON_LINK=https://...
+      # - TWITTER_BUTTON_ACTIVE=true
+      # - TWITTER_BUTTON_LINK=https://...
+
+  coturn:
+    image: coturn/coturn
+    container_name: coturn
+    restart: unless-stopped
+    # host networking: publishing a large UDP port range through Docker is slow and memory hungry
+    network_mode: host
+    command:
+      - -n # no config file, everything is set here
+      - --log-file=stdout
+      - --listening-port=3478
+      - --min-port=${TURN_MIN_PORT}
+      - --max-port=${TURN_MAX_PORT}
+      # Lightsail is behind NAT: public IP / private IP of the instance
+      - --external-ip=${PUBLIC_IP}/${PRIVATE_IP}
+      - --realm=${DOMAIN}
+      - --server-name=nearshare
+      - --fingerprint
+      - --lt-cred-mech
+      - --user=${TURN_USER}:${TURN_PASSWORD}
+      # file transfers are already end-to-end encrypted by WebRTC (DTLS), so plain TURN is fine
+      - --no-tls
+      - --no-dtls
+      - --no-cli
+      - --no-multicast-peers
+      - --no-software-attribute
+      # limit abuse: the TURN credentials are visible to every visitor
+      - --user-quota=12
+      - --total-quota=200
+      # never relay into private networks or the AWS metadata service
+      - --denied-peer-ip=0.0.0.0-0.255.255.255
+      - --denied-peer-ip=10.0.0.0-10.255.255.255
+      - --denied-peer-ip=100.64.0.0-100.127.255.255
+      - --denied-peer-ip=127.0.0.0-127.255.255.255
+      - --denied-peer-ip=169.254.0.0-169.254.255.255
+      - --denied-peer-ip=172.16.0.0-172.31.255.255
+      - --denied-peer-ip=192.0.0.0-192.0.0.255
+      - --denied-peer-ip=192.168.0.0-192.168.255.255
+      - --denied-peer-ip=198.18.0.0-198.19.255.255
+      - --denied-peer-ip=::1
+      - --denied-peer-ip=fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+      - --denied-peer-ip=fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+
+volumes:
+  caddy_data:
+  caddy_config:

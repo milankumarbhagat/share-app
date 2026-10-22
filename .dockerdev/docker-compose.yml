@@ -1,0 +1,29 @@
+services:
+  app:
+    image: pairdrop-local
+    # .dockerdev/Dockerfile, not the production Dockerfile: installs dev deps, source is bind-mounted.
+    build:
+      context: ..
+      dockerfile: .dockerdev/Dockerfile
+    container_name: pairdrop
+    # `node --watch` restarts the server on changes under server/; public/ is served straight off the mount.
+    command: sh -c "npm i && node --watch server/index.js"
+    volumes:
+      - ..:/home/node/app:cached
+      # Keeps the image's installed dependencies, instead of the host's.
+      - /home/node/app/node_modules
+    environment:
+      # Set here, not only in the bind-mounted .env: dotenv does not override variables already set.
+      PORT: "3000"
+      WS_FALLBACK: "false"
+      RATE_LIMIT: "false"
+      RTC_CONFIG: "false"
+      DEBUG_MODE: "false"
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:$$PORT/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+      start_period: 30s

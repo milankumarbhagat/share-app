@@ -1,0 +1,17 @@
+# Caddy gets and renews the HTTPS certificate for {$DOMAIN} automatically.
+# WebSockets (/server) are proxied without extra config.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	reverse_proxy nearshare:3000 {
+		# server/peer.js trusts CF-Connecting-IP to group devices by network.
+		# We are not behind Cloudflare, so drop it to stop clients spoofing their IP.
+		header_up -Cf-Connecting-Ip
+	}
+}
+
+# More apps on this server later, e.g.:
+# tasks.example.com {
+# 	reverse_proxy task-pulse-api:3000
+# }
