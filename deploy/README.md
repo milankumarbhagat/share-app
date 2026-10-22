@@ -75,6 +75,16 @@ cd deploy && docker compose up -d --build
 
 If you change `.env`, run `sh generate-rtc-config.sh` again before `docker compose up -d`.
 
+Or, from your own machine after pushing, run `dip deploy`. It needs this in `~/.ssh/config`:
+
+```
+Host nearshare
+    HostName <static IP>
+    User ubuntu
+    IdentityFile ~/.ssh/<your key>
+    IdentitiesOnly yes
+```
+
 ## Check the TURN server
 
 Open the [Trickle ICE](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/) test page, add

@@ -21,6 +21,14 @@ interaction:
     description: Follow the app container's logs
     command: docker logs -f pairdrop
 
+  deploy:
+    description: >-
+      Pull the pushed branch on the Lightsail server and rebuild. Needs a `nearshare` host in
+      ~/.ssh/config; see deploy/README.md.
+    command: >-
+      ssh nearshare 'cd share-app && git pull --ff-only &&
+      cd deploy && sudo docker compose up -d --build && sudo docker compose ps'
+
 provision:
   - dip compose build
   - dip up -d --wait
