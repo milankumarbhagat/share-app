@@ -815,3 +815,185 @@ x-dialog a {
     margin: auto;
     display: block;
 }
+/*
+    NearShare device list: one row per device with a Send button and a progress bar
+*/
+
+x-peer,
+x-peer.center {
+    position: relative;
+    width: 100%;
+    padding: 0;
+    transform: none;
+    border-bottom: 1px solid var(--card-border);
+}
+
+x-peer:last-of-type {
+    border-bottom: 0;
+}
+
+x-peer > label.column {
+    width: 100%;
+    min-height: 68px;
+    box-sizing: border-box;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 12px 12px 14px;
+}
+
+x-peer:not([status]) > label:hover,
+x-peer[drop] > label {
+    background: color-mix(in srgb, var(--cta-color) 6%, transparent);
+}
+
+x-peer x-icon {
+    --icon-size: 20px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+x-peer .icon-wrapper {
+    padding: 12px;
+    border-radius: 12px;
+}
+
+x-peer .highlight-wrapper {
+    display: none;
+}
+
+x-peer:not([status]):hover x-icon,
+x-peer:not([status]):focus x-icon,
+x-peer[drop] x-icon {
+    transform: none;
+}
+
+x-peer .device-descriptor {
+    flex: 1;
+    min-width: 0;
+    text-align: start;
+}
+
+x-peer .device-descriptor > div {
+    text-align: start;
+}
+
+x-peer .name {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 20px;
+}
+
+x-peer .device-name,
+x-peer .status {
+    font-size: 13px;
+    line-height: 18px;
+    opacity: 1;
+    color: var(--muted-text);
+}
+
+x-peer[status] .status {
+    color: var(--cta-text);
+    font-weight: 700;
+}
+
+.send-pill {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: var(--cta-color);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+x-peer[status] .send-pill {
+    display: none;
+}
+
+/* progress: a bar along the bottom of the row instead of a ring around the icon */
+x-peer[status] > label.column {
+    padding-bottom: 20px;
+}
+
+x-peer .progress,
+x-peer .progress.over50 {
+    position: absolute;
+    top: auto;
+    left: 14px;
+    right: 12px;
+    bottom: 9px;
+    width: auto;
+    height: 4px;
+    clip: auto;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--card-border);
+    opacity: 0;
+}
+
+x-peer[status] .progress {
+    opacity: 1;
+}
+
+x-peer .progress::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    width: calc(var(--progress-ratio, 0) * 100%);
+    border-radius: inherit;
+    background: var(--cta-color);
+}
+
+x-peer .circle {
+    display: none;
+}
+
+x-peer.ws-peer .progress {
+    margin-top: 0;
+}
+
+/* selected files ("send to which device?") */
+#center > .shr-panel {
+    min-width: 0;
+    padding: 6px 8px;
+    border-radius: 16px;
+}
+
+/* stops a running transfer; replaces the Send button while waiting or transferring */
+.cancel-pill {
+    display: none;
+    flex-shrink: 0;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    background: var(--card-bg);
+    color: rgb(var(--text-color));
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.cancel-pill:hover {
+    border-color: var(--muted-text);
+}
+
+.cancel-pill:focus-visible {
+    outline: 2px solid var(--cta-color);
+    outline-offset: 2px;
+}
+
+x-peer[status="wait"] .cancel-pill,
+x-peer[status="transfer"] .cancel-pill {
+    display: inline-flex;
+}

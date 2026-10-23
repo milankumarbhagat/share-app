@@ -39,17 +39,19 @@
 </head>
 
 <body translate="no">
+    <div id="brand">
+        <span class="brand-name">NearShare</span>
+        <span class="brand-tagline" data-i18n-key="brand.tagline" data-i18n-attrs="text"></span>
+    </div>
     <header class="row-reverse wrap opacity-0">
         <a href="#about" class="icon-button" data-i18n-key="header.about" data-i18n-attrs="title aria-label">
             <svg class="icon">
                 <use xlink:href="#info-outline"></use>
             </svg>
         </a>
-        <div id="language-selector" class="icon-button" data-i18n-key="header.language-selector" data-i18n-attrs="title">
-            <svg class="icon">
-                <use xlink:href="#icon-language-selector"></use>
-            </svg>
-        </div>
+        <button type="button" id="language-selector" class="icon-button" data-i18n-key="header.language-selector" data-i18n-attrs="title aria-label">
+            <span class="language-switch" data-i18n-key="header.language-switch" data-i18n-attrs="text"></span>
+        </button>
         <div id="theme-wrapper">
             <div id="theme-auto" class="icon-button selected" data-i18n-key="header.theme-auto" data-i18n-attrs="title">
                 <svg class="icon">
@@ -79,29 +81,57 @@
                 <use xlink:href="#homescreen"></use>
             </svg>
         </div>
-        <div id="pair-device" class="icon-button" data-i18n-key="header.pair-device" data-i18n-attrs="title">
-            <svg class="icon">
-                <use xlink:href="#pair-device-icon"></use>
-            </svg>
-        </div>
-        <div id="edit-paired-devices" class="icon-button" data-i18n-key="header.edit-paired-devices" data-i18n-attrs="title" hidden>
-            <svg class="icon">
-                <use xlink:href="#edit-pair-devices-icon"></use>
-            </svg>
-        </div>
-        <div id="join-public-room" class="icon-button" data-i18n-key="header.join-public-room" data-i18n-attrs="title">
-            <svg class="icon">
-                <use xlink:href="#public-room-icon"></use>
-            </svg>
-        </div>
         <div id="expand" class="icon-button" data-i18n-key="header.expand" data-i18n-attrs="title" hidden>
             <svg class="icon">
                 <use xlink:href="#caret"></use>
             </svg>
         </div>
     </header>
+    <!-- Footer: shown at the top as the "you" card -->
+    <footer class="column opacity-0">
+        <svg class="icon logo">
+            <defs>
+                <linearGradient id="primaryGradient" gradientTransform="rotate(90)">
+                    <stop offset="0%" class="start-color" />
+                    <stop offset="100%" class="stop-color" />
+                </linearGradient>
+            </defs>
+            <use xlink:href="#wifi-tethering" style="fill: url(#primaryGradient);"></use>
+        </svg>
+        <div class="column">
+            <div class="known-as-wrapper">
+                <span data-i18n-key="footer.known-as" data-i18n-attrs="text"></span>
+                <div id="display-name" class="badge" data-i18n-key="footer.display-name" data-i18n-attrs="data-placeholder title" autocorrect="off" autocomplete="off" autocapitalize="none" spellcheck="false" contenteditable></div>
+                <svg class="icon edit-pen">
+                    <use xlink:href="#edit-pen-icon"></use>
+                </svg>
+            </div>
+            <div class="discovery-wrapper panel border row">
+                <div class="row center">
+                    <span data-i18n-key="footer.discovery" data-i18n-attrs="text"></span>
+                </div>
+                <div class="row center wrap">
+                    <span class="badge badge-room-ip" data-i18n-key="footer.on-this-network" data-i18n-attrs="text title"></span>
+                    <span class="badge badge-room-secret pointer" data-i18n-key="footer.paired-devices" data-i18n-attrs="text title" hidden></span>
+                    <span class="badge badge-room-public-id pointer" data-i18n-key="footer.public-room-devices" data-i18n-attrs="title" hidden>in room IAIAI</span>
+                </div>
+            </div>
+        </div>
+    </footer>
     <!-- Center -->
     <div id="center" class="opacity-0">
+        <!-- Choose files first, then pick a device (activates share mode) -->
+        <label id="choose-files">
+            <input type="file" multiple>
+            <svg class="icon-line" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 16V4M7 9l5-5 5 5"></path>
+                <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path>
+            </svg>
+            <span class="choose-files-title" data-i18n-key="choose-files.title" data-i18n-attrs="text"></span>
+            <span class="choose-files-subtitle only-touch" data-i18n-key="choose-files.subtitle" data-i18n-attrs="text"></span>
+            <span class="choose-files-subtitle only-pointer" data-i18n-key="choose-files.subtitle-desktop" data-i18n-attrs="text"></span>
+        </label>
+        <h3 class="peers-heading" data-i18n-key="peers.heading" data-i18n-attrs="text"></h3>
         <!-- Peers -->
         <x-peers class="center grow-5"></x-peers>
         <x-no-peers class="center grow fade-in no-animation-on-load" data-i18n-key="instructions.no-peers" data-i18n-attrs="data-drop-bg">
@@ -142,224 +172,65 @@
             <span data-i18n-key="footer.routed" data-i18n-attrs="text"></span>
             <span data-i18n-key="footer.webrtc" data-i18n-attrs="text"></span>
         </div>
-    </div>
-    <!-- Footer -->
-    <footer class="column opacity-0">
-        <svg class="icon logo">
-            <defs>
-                <linearGradient id="primaryGradient" gradientTransform="rotate(90)">
-                    <stop offset="0%" class="start-color" />
-                    <stop offset="100%" class="stop-color" />
-                </linearGradient>
-            </defs>
-            <use xlink:href="#wifi-tethering" style="fill: url(#primaryGradient);"></use>
-        </svg>
-        <div class="column">
-            <div class="known-as-wrapper">
-                <span data-i18n-key="footer.known-as" data-i18n-attrs="text"></span>
-                <div id="display-name" class="badge" data-i18n-key="footer.display-name" data-i18n-attrs="data-placeholder title" autocorrect="off" autocomplete="off" autocapitalize="none" spellcheck="false" contenteditable></div>
-                <svg class="icon edit-pen">
-                    <use xlink:href="#edit-pen-icon"></use>
+        <!-- Pairing and public rooms (were header icons) -->
+        <div class="actions-row">
+            <button type="button" id="pair-device" class="action-btn" data-i18n-key="header.pair-device" data-i18n-attrs="title">
+                <svg class="icon">
+                    <use xlink:href="#pair-device-icon"></use>
                 </svg>
-            </div>
-            <div class="discovery-wrapper panel border row">
-                <div class="row center">
-                    <span data-i18n-key="footer.discovery" data-i18n-attrs="text"></span>
-                </div>
-                <div class="row center wrap">
-                    <span class="badge badge-room-ip" data-i18n-key="footer.on-this-network" data-i18n-attrs="text title"></span>
-                    <span class="badge badge-room-secret pointer" data-i18n-key="footer.paired-devices" data-i18n-attrs="text title" hidden></span>
-                    <span class="badge badge-room-public-id pointer" data-i18n-key="footer.public-room-devices" data-i18n-attrs="title" hidden>in room IAIAI</span>
-                </div>
-            </div>
+                <span data-i18n-key="actions.pair-device" data-i18n-attrs="text"></span>
+            </button>
+            <button type="button" id="edit-paired-devices" class="action-btn" data-i18n-key="header.edit-paired-devices" data-i18n-attrs="title" hidden>
+                <svg class="icon">
+                    <use xlink:href="#edit-pair-devices-icon"></use>
+                </svg>
+                <span data-i18n-key="actions.edit-paired-devices" data-i18n-attrs="text"></span>
+            </button>
+            <button type="button" id="join-public-room" class="action-btn" data-i18n-key="header.join-public-room" data-i18n-attrs="title">
+                <svg class="icon">
+                    <use xlink:href="#public-room-icon"></use>
+                </svg>
+                <span data-i18n-key="actions.join-public-room" data-i18n-attrs="text"></span>
+            </button>
         </div>
-    </footer>
-    <!-- Language Select Dialog -->
-    <x-dialog id="language-select-dialog">
-        <x-background class="full center">
-            <x-paper shadow="2">
-                <div class="row center p-2">
-                    <h2 class="dialog-title" data-i18n-key="dialogs.language-selector-title" data-i18n-attrs="text"></h2>
-                </div>
-                <div class="language-buttons p2">
-                    <button class="btn fw wrap">
-                        <span data-i18n-key="dialogs.system-language" data-i18n-attrs="text"></span>
-                    </button>
-                    <button class="btn fw wrap" value="ar">
-                        <span lang="ar" dir="rtl">العربية</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Arabic)</span>
-                    </button>
-                    <button class="btn fw wrap" value="be">
-                        <span lang="be">беларуская</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Belarusian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="nb">
-                        <span lang="nb">Bokmål</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Norwegian Bokmål)</span>
-                    </button>
-                    <button class="btn fw wrap" value="bg">
-                        <span lang="bg">български</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Bulgarian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="ca">
-                        <span lang="ca">Català</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Catalan)</span>
-                    </button>
-                    <button class="btn fw wrap" value="cs">
-                        <span lang="cs">Čeština</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Czech)</span>
-                    </button>
-                    <button class="btn fw wrap" value="da">
-                        <span lang="da">Dansk</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Danish)</span>
-                    </button>
-                    <button class="btn fw wrap" value="de">
-                        <span lang="de">Deutsch</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(German)</span>
-                    </button>
-                    <button class="btn fw wrap" value="en">
-                        <span lang="en">English</span>
-                    </button>
-                    <button class="btn fw wrap" value="es">
-                        <span lang="es">Español</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Spanish)</span>
-                    </button>
-                    <button class="btn fw wrap" value="et">
-                        <span lang="et">Eesti</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Estonian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="eu">
-                        <span lang="eu">Euskara</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Basque)</span>
-                    </button>
-                    <button class="btn fw wrap" value="fa">
-                        <span lang="fa" dir="rtl">فارسی</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Persian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="fr">
-                        <span lang="fr">Français</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(French)</span>
-                    </button>
-                    <button class="btn fw wrap" value="id">
-                        <span lang="id">Bahasa Indonesia</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Indonesian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="it">
-                        <span lang="it">Italiano</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Italian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="he">
-                        <span lang="he" dir="rtl">עִבְרִית</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Hebrew)</span>
-                    </button>
-                    <button class="btn fw wrap" value="kn">
-                        <span lang="kn">ಕನ್ನಡ</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Kannada)</span>
-                    </button>
-                    <button class="btn fw wrap" value="hu">
-                        <span lang="hu">Magyar</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Hungarian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="nl">
-                        <span lang="nl">Nederlands</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Dutch)</span>
-                    </button>
-                    <button class="btn fw wrap" value="nn">
-                        <span lang="nn">Norsk</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Norwegian Nynorsk)</span>
-                    </button>
-                    <button class="btn fw wrap" value="pl">
-                        <span lang="pl">Polski</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Polish)</span>
-                    </button>
-                    <button class="btn fw wrap" value="pt-BR">
-                        <span lang="pt-BR">Português do Brasil</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Brazilian Portuguese)</span>
-                    </button>
-                    <button class="btn fw wrap" value="ro">
-                        <span lang="ro">Română</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Romanian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="ru">
-                        <span lang="ru">Русский язык</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Russian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="sk">
-                        <span lang="sk">Slovenčina</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Slovak)</span>
-                    </button>
-                    <button class="btn fw wrap" value="ta">
-                        <span lang="ta">தமிழ்</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Tamil)</span>
-                    </button>
-                    <button class="btn fw wrap" value="tr">
-                        <span lang="tr">Türkçe</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Turkish)</span>
-                    </button>
-                    <button class="btn fw wrap" value="uk">
-                        <span lang="uk">Українська</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Ukrainian)</span>
-                    </button>
-                    <button class="btn fw wrap" value="zh-CN">
-                        <span lang="zh-CN">汉语</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Simplified Chinese)</span>
-                    </button>
-                    <button class="btn fw wrap" value="zh-HK">
-                        <span lang="zh-HK">中文</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Hant Script)</span>
-                    </button>
-                    <button class="btn fw wrap" value="zh-TW">
-                        <span lang="zh-TW">漢語</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Traditional Chinese)</span>
-                    </button>
-                    <button class="btn fw wrap" value="ja">
-                        <span lang="ja">日本語</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Japanese)</span>
-                    </button>
-                    <button class="btn fw wrap" value="ko">
-                        <span lang="ko">한국어</span>
-                        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-                        <span>(Korean)</span>
-                    </button>
-                </div>
-                <div class="center row-reverse btn-row wrap">
-                    <button class="btn btn-rounded btn-grey" type="button" data-i18n-key="dialogs.close" data-i18n-attrs="text" close></button>
-                </div>
-            </x-paper>
-        </x-background>
-    </x-dialog>
+        <p class="privacy-note">
+            <svg class="icon-line" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+            </svg>
+            <span data-i18n-key="privacy.note" data-i18n-attrs="text"></span>
+        </p>
+        <!-- FAQ: collapsed answers to common first-visit questions -->
+        <section class="faq" aria-labelledby="faq-heading">
+            <h3 id="faq-heading" data-i18n-key="faq.heading" data-i18n-attrs="text"></h3>
+            <div class="faq-list">
+            <details class="faq-item">
+                <summary data-i18n-key="faq.not-visible-question" data-i18n-attrs="text"></summary>
+                <p data-i18n-key="faq.not-visible-answer" data-i18n-attrs="text"></p>
+            </details>
+            <details class="faq-item">
+                <summary data-i18n-key="faq.safety-question" data-i18n-attrs="text"></summary>
+                <p data-i18n-key="faq.safety-answer" data-i18n-attrs="text"></p>
+            </details>
+            <details class="faq-item">
+                <summary data-i18n-key="faq.size-question" data-i18n-attrs="text"></summary>
+                <p data-i18n-key="faq.size-answer" data-i18n-attrs="text"></p>
+            </details>
+            <details class="faq-item">
+                <summary data-i18n-key="faq.install-question" data-i18n-attrs="text"></summary>
+                <p data-i18n-key="faq.install-answer" data-i18n-attrs="text"></p>
+            </details>
+            <details class="faq-item">
+                <summary data-i18n-key="faq.name-question" data-i18n-attrs="text"></summary>
+                <p data-i18n-key="faq.name-answer" data-i18n-attrs="text"></p>
+            </details>
+            <details class="faq-item">
+                <summary data-i18n-key="faq.stopped-question" data-i18n-attrs="text"></summary>
+                <p data-i18n-key="faq.stopped-answer" data-i18n-attrs="text"></p>
+            </details>
+            </div>
+        </section>
+    </div>
     <!-- Pair Device Dialog -->
     <x-dialog id="pair-device-dialog">
         <form action="#">

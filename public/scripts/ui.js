@@ -15,6 +15,7 @@ class PeersUI {
         this.$shareModeDescriptorOther = $$('.shr-panel .descriptor-other');
         this.$shareModeCancelBtn = $$('.shr-panel .cancel-btn');
         this.$shareModeEditBtn = $$('.shr-panel .edit-btn');
+        this.$chooseFilesInput = $$('#choose-files input');
 
         this.peers = {};
 
@@ -22,7 +23,8 @@ class PeersUI {
             active: false,
             descriptor: "",
             files: [],
-            text: ""
+            text: "",
+            sentTo: []
         }
 
         Events.on('peer-joined', e => this._onPeerJoined(e.detail));
@@ -46,7 +48,9 @@ class PeersUI {
         Events.on('room-type-removed', e => this._onRoomTypeRemoved(e.detail.peerId, e.detail.roomType));
 
 
-        this.$shareModeCancelBtn.addEventListener('click', _ => this._deactivateShareMode());
+        this.$shareModeCancelBtn.addEventListener('click', _ => this._onShareModeCancel());
+        this.$chooseFilesInput.addEventListener('change', e => this._onChooseFiles(e));
+        Events.on('transfer-canceled-by-peer', e => this._onTransferCanceledByPeer(e.detail));
 
         Events.on('peer-display-name-changed', e => this._onPeerDisplayNameChanged(e));
 
@@ -153,6 +157,16 @@ class PeersUI {
         // Remove peer from UI
         const $peer = $(peerId);
         if (!$peer) return;
+
+        // A transfer with this peer was still running (status is cleared once it finishes).
+        // The message stays until the user closes it, so it is not missed.
+        if ($peer.hasAttribute('status')) {
+            Events.fire('notify-user', {
+                message: Localization.getTranslation("notifications.transfer-interrupted", null, {name: $peer.ui._displayName()}),
+                persistent: true
+            });
+        }
+
         $peer.remove();
         this._evaluateOverflowingPeers();
 
@@ -240,6 +254,16 @@ class PeersUI {
                 Events.fire('activate-share-mode', {text: text});
             }
         }
+    }
+
+    _onChooseFiles(e) {
+        // convert FileList to Array before resetting the input, so the same files can be chosen again later
+        const files = [...e.target.files];
+        e.target.value = null;
+
+        if (this.shareMode.active || files.length === 0) return;
+
+        Events.fire('activate-share-mode', {files: files});
     }
 
     async _activateShareMode(files = [], text = "") {
@@ -357,6 +381,7 @@ class PeersUI {
         this.shareMode.descriptor = "";
         this.shareMode.files = [];
         this.shareMode.text = "";
+        this.shareMode.sentTo = [];
 
         Events.off('share-mode-pointerdown', this._activateCallback);
 
@@ -383,11 +408,33 @@ class PeersUI {
         Events.fire('share-mode-changed', { active: false });
     }
 
+    async _onShareModeCancel() {
+        // also stop the transfers of these files that are still running
+        const runningTransfers = this.shareMode.sentTo.filter(peerId => $(peerId) && $(peerId).hasAttribute('status'));
+
+        // deactivate first: it hides the toast, which would swallow the "Transfer cancelled" message
+        await this._deactivateShareMode();
+
+        runningTransfers.forEach(peerId => Events.fire('cancel-transfer', peerId));
+    }
+
+    _onTransferCanceledByPeer(peerId) {
+        const $peer = $(peerId);
+        if (!$peer) return;
+
+        Events.fire('notify-user', {
+            message: Localization.getTranslation("notifications.transfer-canceled-by-peer", null, {name: $peer.ui._displayName()}),
+            persistent: true
+        });
+    }
+
     _sendShareData(e) {
         // send the shared file/text content
         const peerId = e.detail.peerId;
         const files = this.shareMode.files;
         const text = this.shareMode.text;
+
+        if (!this.shareMode.sentTo.includes(peerId)) this.shareMode.sentTo.push(peerId);
 
         if (files.length > 0) {
             Events.fire('files-selected', {
@@ -456,11 +503,25 @@ class PeerUI {
                     <div class="device-name font-body2"></div>
                     <div class="status font-body2"></div>
                 </div>
+                <span class="send-pill" data-i18n-key="peer-ui.send" data-i18n-attrs="text"></span>
+                <button type="button" class="cancel-pill" data-i18n-key="peer-ui.cancel" data-i18n-attrs="text"></button>
             </label>`;
 
         this.$el.querySelector('svg use').setAttribute('xlink:href', this._icon());
         this.$el.querySelector('.name').textContent = this._displayName();
         this.$el.querySelector('.device-name').textContent = this._deviceName();
+        this.$el.querySelector('.send-pill').textContent = Localization.getTranslation("peer-ui.send");
+
+        const $cancelBtn = this.$el.querySelector('.cancel-pill');
+        $cancelBtn.textContent = Localization.getTranslation("peer-ui.cancel");
+        // keep the press from reaching the row, which would pick files or (in share mode) send again
+        ['pointerdown', 'touchstart', 'touchend', 'contextmenu'].forEach(type =>
+            $cancelBtn.addEventListener(type, e => e.stopPropagation()));
+        $cancelBtn.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            Events.fire('cancel-transfer', this._peer.id);
+        });
 
         this.$label = this.$el.querySelector('label');
         this.$input = this.$el.querySelector('input');
@@ -630,18 +691,24 @@ class PeerUI {
                 }[status];
 
                 this.$el.setAttribute('status', status);
-                this.$el.querySelector('.status').innerText = statusName;
                 this.currentStatus = status;
+                this.currentStatusName = statusName;
             }
+            // show the percentage while the files are actually being sent
+            this.$el.querySelector('.status').innerText = status === 'transfer'
+                ? `${this.currentStatusName} ${Math.floor(progress * 100)}%`
+                : this.currentStatusName;
         }
         else {
             this.$el.removeAttribute('status');
             this.$el.querySelector('.status').innerHTML = '';
             progress = 0;
             this.currentStatus = null;
+            this.currentStatusName = null;
         }
         const degrees = `rotate(${360 * progress}deg)`;
         $progress.style.setProperty('--progress', degrees);
+        $progress.style.setProperty('--progress-ratio', progress);
     }
 
     _onDrop(e) {
@@ -755,7 +822,11 @@ class Dialog {
     _onPeerDisconnected(peerId) {
         if (this.isShown() && this.correspondingPeerId === peerId) {
             this.hide();
-            Events.fire('notify-user', Localization.getTranslation("notifications.selected-peer-left"));
+            // stays until the user closes it, so it is not missed
+            Events.fire('notify-user', {
+                message: Localization.getTranslation("notifications.selected-peer-left"),
+                persistent: true
+            });
         }
     }
 
@@ -769,59 +840,18 @@ class Dialog {
     }
 }
 
-class LanguageSelectDialog extends Dialog {
+class LanguageSwitch {
 
     constructor() {
-        super('language-select-dialog');
-
-        this.$languageSelectBtn = $('language-selector');
-        this.$languageSelectBtn.addEventListener('click', _ => this.show());
-
-        this.$languageButtons = this.$el.querySelectorAll(".language-buttons .btn");
-        this.$languageButtons.forEach($btn => {
-            $btn.addEventListener("click", e => this.selectLanguage(e));
-        })
-        Events.on('keydown', e => this._onKeyDown(e));
+        this.$languageSwitchBtn = $('language-selector');
+        this.$languageSwitchBtn.addEventListener('click', _ => this._switchLanguage());
     }
 
-    _onKeyDown(e) {
-        if (!this.isShown()) return;
-
-        if (e.code === "Escape") {
-            this.hide();
-        }
-    }
-
-    show() {
-        let locale = Localization.getLocale();
-        this.currentLanguageBtn = Localization.isSystemLocale()
-            ? this.$languageButtons[0]
-            : this.$el.querySelector(`.btn[value="${locale}"]`);
-
-        this.currentLanguageBtn.classList.add("current");
-
-        super.show();
-    }
-
-    hide() {
-        this.currentLanguageBtn.classList.remove("current");
-
-        super.hide();
-    }
-
-    selectLanguage(e) {
-        e.preventDefault()
-        let languageCode = e.target.value;
-
-        if (languageCode) {
-            localStorage.setItem('language_code', languageCode);
-        }
-        else {
-            localStorage.removeItem('language_code');
-        }
-
-        Localization.setTranslation(languageCode)
-            .then(_ => this.hide());
+    _switchLanguage() {
+        // only English and Hindi are offered: switch to the other one and remember the choice
+        const languageCode = Localization.getLocale() === 'hi' ? 'en' : 'hi';
+        localStorage.setItem('language_code', languageCode);
+        Localization.setTranslation(languageCode);
     }
 }
 
@@ -1110,7 +1140,14 @@ class ReceiveRequestDialog extends ReceiveDialog {
 
         Events.on('files-transfer-request', e => this._onRequestFileTransfer(e.detail.request, e.detail.peerId))
         Events.on('keydown', e => this._onKeyDown(e));
+        Events.on('transfer-canceled-by-peer', e => this._onTransferCanceledByPeer(e.detail));
         this._filesTransferRequestQueue = [];
+    }
+
+    _onTransferCanceledByPeer(peerId) {
+        // the sender withdrew the request before it was answered
+        this._filesTransferRequestQueue = this._filesTransferRequestQueue.filter(item => item.peerId !== peerId);
+        if (this.isShown() && this.correspondingPeerId === peerId) this.hide();
     }
 
     _onKeyDown(e) {
