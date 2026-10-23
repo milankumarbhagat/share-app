@@ -23,11 +23,9 @@ interaction:
 
   deploy:
     description: >-
-      Pull the pushed branch on the Lightsail server and rebuild. Needs a `nearshare` host in
-      ~/.ssh/config; see deploy/README.md.
-    command: >-
-      ssh nearshare 'cd share-app && git pull --ff-only &&
-      cd deploy && sudo docker compose up -d --build && sudo docker compose ps'
+      Redeploy the pushed develop branch on the Lightsail server (same script GitHub Actions runs).
+      Needs a `nearshare` host in ~/.ssh/config; see deploy/README.md.
+    command: ssh nearshare ./deploy.sh
 
 provision:
   - dip compose build
