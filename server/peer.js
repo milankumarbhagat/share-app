@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import parser from "ua-parser-js";
-import {animals, colors, uniqueNamesGenerator} from "unique-names-generator";
 import {cyrb53, hasher} from "./helper.js";
+import {movieCharacters} from "./movie-characters.js";
 
 export default class Peer {
 
@@ -160,13 +160,7 @@ export default class Peer {
             deviceName = 'Unknown Device';
         }
 
-        const displayName = uniqueNamesGenerator({
-            length: 2,
-            separator: ' ',
-            dictionaries: [colors, animals],
-            style: 'capital',
-            seed: cyrb53(this.id)
-        })
+        const displayName = movieCharacters[cyrb53(this.id) % movieCharacters.length];
 
         this.name = {
             model: ua.device.model,
