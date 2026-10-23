@@ -1,7 +1,9 @@
 {
     "header": {
         "about_title": "About NearShare",
-        "language-selector_title": "Set Language",
+        "language-selector_title": "हिन्दी में देखें",
+        "language-selector_aria-label": "हिन्दी में देखें",
+        "language-switch": "हिं",
         "about_aria-label": "Open About NearShare",
         "theme-auto_title": "Adapt theme to system automatically",
         "theme-light_title": "Always use light theme",
@@ -99,8 +101,6 @@
         "title-file-plural": "Files",
         "receive-title": "{{descriptor}} Received",
         "download-again": "Download again",
-        "language-selector-title": "Set Language",
-        "system-language": "System Language",
         "public-room-qr-code_title": "Click to copy link to public room",
         "pair-devices-qr-code_title": "Click to copy link to pair this device",
         "approve": "approve",
@@ -162,7 +162,10 @@
         "message-transfer-completed": "Message transfer completed",
         "unfinished-transfers-warning": "There are unfinished transfers. Are you sure you want to close NearShare?",
         "rate-limit-join-key": "Rate limit reached. Wait 10 seconds and try again.",
-        "selected-peer-left": "Selected peer left"
+        "selected-peer-left": "The other device disconnected",
+        "transfer-interrupted": "{{name}} disconnected. The transfer was not completed.",
+        "transfer-canceled": "Transfer cancelled",
+        "transfer-canceled-by-peer": "{{name}} cancelled the transfer"
     },
     "document-titles": {
         "file-received": "File Received",
@@ -179,6 +182,42 @@
         "preparing": "Preparing…",
         "waiting": "Waiting…",
         "processing": "Processing…",
-        "transferring": "Transferring…"
+        "transferring": "Transferring…",
+        "send": "Send",
+        "cancel": "Cancel"
+    },
+    "brand": {
+        "tagline": "Send files to devices near you"
+    },
+    "choose-files": {
+        "title": "Choose files to send",
+        "subtitle": "Then tap a device below",
+        "subtitle-desktop": "Then click a device below, or drop files here"
+    },
+    "peers": {
+        "heading": "Devices"
+    },
+    "actions": {
+        "pair-device": "Pair a device",
+        "edit-paired-devices": "Paired devices",
+        "join-public-room": "Public room"
+    },
+    "privacy": {
+        "note": "Files go straight between devices and are never stored on a server"
+    },
+    "faq": {
+        "heading": "Questions?",
+        "not-visible-question": "Why don't I see the other device?",
+        "not-visible-answer": "Open this site on both devices while they are on the same Wi-Fi. If they are on different networks, use “Pair a device” or “Public room” to connect them.",
+        "safety-question": "Where do my files go? Is it safe?",
+        "safety-answer": "Files go straight from one device to the other and are encrypted on the way. If a direct connection isn't possible, they pass through our relay server, still encrypted and never stored.",
+        "size-question": "Is there a size limit?",
+        "size-answer": "There is no fixed limit. iPhones and iPads can receive up to 200 MB per transfer. Keep both screens open until the transfer finishes.",
+        "install-question": "Do I need to install anything or sign up?",
+        "install-answer": "No. It works in your browser. On supported browsers you can also install it as an app with the install icon at the top.",
+        "name-question": "Why is my name a movie character?",
+        "name-answer": "Each device gets a random movie character name. Tap the pencil next to your name to change it.",
+        "stopped-question": "What if a transfer stops?",
+        "stopped-answer": "If either side closes the page or presses Cancel, the other device shows a message. Just send the files again."
     }
 }

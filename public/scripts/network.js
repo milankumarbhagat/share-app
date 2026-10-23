@@ -477,6 +477,7 @@ class Peer {
             this._filesQueue.push(this._filesRequested[i]);
         }
         this._filesRequested = null
+        this._sendingFiles = true;
         if (this._busy) return;
         this._dequeueFile();
     }
@@ -537,7 +538,8 @@ class Peer {
                 this._sendNextPartition();
                 break;
             case 'progress':
-                this._onDownloadProgress(messageJSON.progress);
+                // ignore updates that were already on their way when the transfer was cancelled
+                if (this._sendingFiles) this._onDownloadProgress(messageJSON.progress);
                 break;
             case 'files-transfer-response':
                 this._onFileTransferRequestResponded(messageJSON);
@@ -554,7 +556,48 @@ class Peer {
             case 'display-name-changed':
                 this._onDisplayNameChanged(messageJSON);
                 break;
+            case 'transfer-cancel':
+                this._onTransferCanceled();
+                break;
         }
+    }
+
+    _transferActive() {
+        return !!(this._filesRequested || this._sendingFiles || this._requestPending || this._requestAccepted);
+    }
+
+    // Stops the running transfer with this peer, in either direction, and tells the peer
+    cancelTransfer() {
+        if (!this._transferActive()) return;
+
+        this.sendJSON({type: 'transfer-cancel'});
+        this._resetTransfer();
+        Events.fire('notify-user', Localization.getTranslation("notifications.transfer-canceled"));
+    }
+
+    _onTransferCanceled() {
+        if (!this._transferActive()) return;
+
+        this._resetTransfer();
+        Events.fire('transfer-canceled-by-peer', this._peerId);
+    }
+
+    _resetTransfer() {
+        // sending side
+        if (this._chunker) this._chunker.cancel();
+        this._chunker = null;
+        this._filesQueue = [];
+        this._filesRequested = null;
+        this._sendingFiles = false;
+
+        // receiving side
+        this._requestPending = null;
+        this._requestAccepted = null;
+        this._digester = null;
+        this._filesReceived = [];
+
+        this._busy = false;
+        Events.fire('set-progress', {peerId: this._peerId, progress: 1, status: 'wait'});
     }
 
     _onFilesTransferRequest(request) {
@@ -664,9 +707,15 @@ class Peer {
     }
 
     _onFileTransferCompleted() {
+        // a confirmation that was already on its way when the transfer was cancelled
+        if (!this._sendingFiles) return;
+
         this._chunker = null;
         if (!this._filesQueue.length) {
             this._busy = false;
+            this._sendingFiles = false;
+            // reset the row here: the receiver's final 100% update arrives after this and is ignored
+            Events.fire('set-progress', {peerId: this._peerId, progress: 1, status: 'transfer'});
             Events.fire('notify-user', Localization.getTranslation("notifications.file-transfer-completed"));
             Events.fire('files-sent'); // used by 'Snapdrop & PairDrop for Android' app
         }
@@ -676,6 +725,9 @@ class Peer {
     }
 
     _onFileTransferRequestResponded(message) {
+        // the request was cancelled before this answer arrived
+        if (!this._filesRequested) return;
+
         if (!message.accepted) {
             Events.fire('set-progress', {peerId: this._peerId, progress: 1, status: 'wait'});
             this._filesRequested = null;
@@ -989,6 +1041,7 @@ class PeersManager {
         Events.on('files-selected', e => this._onFilesSelected(e.detail));
         Events.on('respond-to-files-transfer-request', e => this._onRespondToFileTransferRequest(e.detail))
         Events.on('send-text', e => this._onSendText(e.detail));
+        Events.on('cancel-transfer', e => this._onCancelTransfer(e.detail));
         Events.on('peer-left', e => this._onPeerLeft(e.detail));
         Events.on('peer-joined', e => this._onPeerJoined(e.detail));
         Events.on('peer-connected', e => this._onPeerConnected(e.detail.peerId));
@@ -1088,6 +1141,11 @@ class PeersManager {
 
     _onSendText(message) {
         this.peers[message.to].sendText(message.text);
+    }
+
+    _onCancelTransfer(peerId) {
+        if (!this.peers[peerId]) return;
+        this.peers[peerId].cancelTransfer();
     }
 
     _onPeerLeft(message) {
@@ -1256,7 +1314,14 @@ class FileChunker {
         this._reader.readAsArrayBuffer(chunk);
     }
 
+    cancel() {
+        this._canceled = true;
+    }
+
     _onChunkRead(chunk) {
+        // a read that was still running when the transfer was cancelled
+        if (this._canceled) return;
+
         this._offset += chunk.byteLength;
         this._partitionSize += chunk.byteLength;
         this._onChunk(chunk);

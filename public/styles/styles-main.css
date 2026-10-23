@@ -1115,3 +1115,615 @@ See note here: https://developer.mozilla.org/en-US/docs/Web/CSS/user-select */
     user-select: text;
 }
 
+
+/*
+    NearShare layout: brand bar, "you" card at the top, then choose files, devices and actions in one column
+*/
+
+body {
+    --lt-bg-color: 246,247,249;
+
+    --lt-card-bg: #ffffff;
+    --lt-card-border: #e5e7eb;
+    --lt-muted-text: #5b6474;
+    --lt-cta-color: #1d4ed8;
+    --lt-cta-text: #1d4ed8;
+
+    --dt-card-bg: #16181b;
+    --dt-card-border: #2c3036;
+    --dt-muted-text: #a3aab6;
+    --dt-cta-color: #2563eb;
+    --dt-cta-text: #93b4ff;
+
+    --card-bg: var(--lt-card-bg);
+    --card-border: var(--lt-card-border);
+    --muted-text: var(--lt-muted-text);
+    --cta-color: var(--lt-cta-color);
+    --cta-text: var(--lt-cta-text);
+}
+
+body.dark-theme {
+    --card-bg: var(--dt-card-bg);
+    --card-border: var(--dt-card-border);
+    --muted-text: var(--dt-muted-text);
+    --cta-color: var(--dt-cta-color);
+    --cta-text: var(--dt-cta-text);
+}
+
+@media (prefers-color-scheme: dark) {
+    body:not(.light-theme) {
+        --card-bg: var(--dt-card-bg);
+        --card-border: var(--dt-card-border);
+        --muted-text: var(--dt-muted-text);
+        --cta-color: var(--dt-cta-color);
+        --cta-text: var(--dt-cta-text);
+    }
+}
+
+/* the radar rings are replaced by the device list */
+canvas.circles {
+    display: none;
+}
+
+#brand {
+    position: absolute;
+    top: 9px;
+    left: 16px;
+    z-index: 21;
+    display: flex;
+    flex-direction: column;
+    width: 180px;
+}
+
+html[dir="rtl"] #brand {
+    left: auto;
+    right: 16px;
+}
+
+.brand-name {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+}
+
+.brand-tagline {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--muted-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* keep header icons clear of the brand; icons that do not fit collapse behind the expand button */
+html:not([dir="rtl"]) header {
+    padding-left: 196px;
+}
+
+html[dir="rtl"] header {
+    padding-right: 196px;
+}
+
+/* phones: drop the tagline so all header icons fit next to the name */
+@media (max-width: 520px) {
+    #brand {
+        top: 16px;
+        width: auto;
+    }
+
+    .brand-tagline {
+        display: none;
+    }
+
+    html:not([dir="rtl"]) header {
+        padding-left: 124px;
+    }
+
+    html[dir="rtl"] header {
+        padding-right: 124px;
+    }
+}
+
+/* "You" card */
+footer.column {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    width: calc(100% - 32px);
+    max-width: 560px;
+    box-sizing: border-box;
+    margin: 6px auto 14px;
+    padding: 12px 14px;
+    text-align: start;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+
+footer .logo {
+    --icon-size: 24px;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 10px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+}
+
+footer > .column {
+    flex: 1;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.known-as-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    max-width: 100%;
+}
+
+.known-as-wrapper > span {
+    flex-basis: 100%;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--muted-text);
+}
+
+html:not([dir="rtl"]) #display-name,
+html[dir="rtl"] #display-name,
+#display-name {
+    height: auto;
+    max-width: calc(100% - 24px);
+    margin: 0;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 22px;
+}
+
+#display-name:focus {
+    outline: 2px solid var(--cta-color);
+    outline-offset: 1px;
+}
+
+html:not([dir="rtl"]) .edit-pen,
+html[dir="rtl"] .edit-pen {
+    margin: 0 4px;
+    color: var(--muted-text);
+}
+
+footer .discovery-wrapper,
+footer .discovery-wrapper.row,
+footer .discovery-wrapper.column {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    min-height: 0;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--muted-text);
+}
+
+footer .discovery-wrapper > div,
+footer .discovery-wrapper > div:first-of-type {
+    padding: 0;
+    justify-content: flex-start;
+}
+
+/* Main column */
+#center {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 0 16px 20px;
+    box-sizing: border-box;
+}
+
+#center > * {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 560px;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#choose-files { order: 1; }
+#center > .shr-panel { order: 1; }
+.peers-heading { order: 2; }
+x-peers { order: 3; }
+x-no-peers { order: 4; }
+x-instructions { order: 5; }
+.actions-row { order: 6; }
+#websocket-fallback { order: 7; }
+.privacy-note { order: 8; }
+
+#choose-files {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 112px;
+    padding: 16px;
+    border: 2px dashed color-mix(in srgb, var(--cta-color) 45%, transparent);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--cta-color) 7%, rgb(var(--bg-color)));
+    color: var(--cta-text);
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#choose-files:hover {
+    background: color-mix(in srgb, var(--cta-color) 12%, rgb(var(--bg-color)));
+}
+
+#choose-files:focus-within {
+    outline: 2px solid var(--cta-color);
+    outline-offset: 2px;
+}
+
+#choose-files input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#choose-files .icon-line {
+    width: 28px;
+    height: 28px;
+}
+
+.choose-files-title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 22px;
+}
+
+.choose-files-subtitle {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--muted-text);
+}
+
+/* the selected-files panel takes the place of the choose-files box */
+#center:has(> .shr-panel:not([hidden])) > #choose-files {
+    display: none;
+}
+
+.peers-heading {
+    margin: 4px 0 -6px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 20px;
+    color: rgb(var(--text-color));
+}
+
+#center:has(> x-peers:empty) > .peers-heading {
+    display: none;
+}
+
+x-peers.center {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+}
+
+x-no-peers {
+    height: auto;
+    padding: 20px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    color: var(--muted-text);
+}
+
+x-no-peers h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 22px;
+    color: rgb(var(--text-color));
+}
+
+x-no-peers::before {
+    font-size: 16px;
+}
+
+x-instructions {
+    min-height: 0;
+    opacity: 1;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--muted-text);
+}
+
+.actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.action-btn {
+    flex: 1 1 140px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    background: var(--card-bg);
+    color: rgb(var(--text-color));
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.action-btn[hidden] {
+    display: none;
+}
+
+.action-btn:hover {
+    border-color: var(--muted-text);
+}
+
+.action-btn:focus-visible {
+    outline: 2px solid var(--cta-color);
+    outline-offset: 2px;
+}
+
+.action-btn .icon {
+    --icon-size: 20px;
+}
+
+.privacy-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--muted-text);
+    text-align: center;
+}
+
+.privacy-note .icon-line {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* touch vs. mouse wording */
+.only-pointer {
+    display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .only-pointer {
+        display: inline;
+    }
+
+    .only-touch {
+        display: none;
+    }
+}
+
+/* dark theme: a dark grey page instead of pure black, so the cards stand out */
+body {
+    --dt-bg-color: 13,15,18;
+    --dt-card-bg: #191c21;
+    --dt-card-border: #2e333b;
+}
+
+/* desktop: one centred column, with the name and icons lined up to its edges */
+@media (min-width: 900px) {
+    body {
+        --page-width: 760px;
+        --page-gutter: max(16px, calc((100vw - var(--page-width)) / 2));
+    }
+
+    #brand,
+    html[dir="rtl"] #brand {
+        top: 22px;
+        width: 220px;
+    }
+
+    html:not([dir="rtl"]) #brand {
+        left: var(--page-gutter);
+    }
+
+    html[dir="rtl"] #brand {
+        right: var(--page-gutter);
+    }
+
+    .brand-name {
+        font-size: 22px;
+        line-height: 26px;
+    }
+
+    .brand-tagline {
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    header,
+    html:not([dir="rtl"]) header,
+    html[dir="rtl"] header {
+        padding-top: 22px;
+        padding-inline-start: calc(var(--page-gutter) + 228px);
+        padding-inline-end: calc(var(--page-gutter) - 4px);
+    }
+
+    header:not(.overflow-expanded) {
+        height: 84px;
+    }
+
+    footer.column {
+        width: var(--page-width);
+        max-width: calc(100vw - 32px);
+        margin: 12px auto 18px;
+        padding: 16px 18px;
+    }
+
+    #center {
+        gap: 18px;
+        padding-bottom: 40px;
+    }
+
+    #center > * {
+        max-width: var(--page-width);
+    }
+
+    #choose-files {
+        min-height: 168px;
+    }
+
+    #choose-files .icon-line {
+        width: 34px;
+        height: 34px;
+    }
+
+    .choose-files-title {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
+    .choose-files-subtitle {
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    .peers-heading {
+        font-size: 16px;
+    }
+}
+
+/* FAQ: one card of collapsed questions below the main column, quieter than the controls above */
+.faq {
+    order: 9;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.faq h3 {
+    margin: 0;
+    padding-inline-start: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    color: var(--muted-text);
+}
+
+.faq-list {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.faq-item + .faq-item {
+    border-top: 1px solid color-mix(in srgb, var(--card-border) 65%, var(--card-bg));
+}
+
+.faq-item summary {
+    position: relative;
+    list-style: none;
+    padding-block: 14px;
+    padding-inline: 16px 44px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.faq-item[open] summary {
+    font-weight: 600;
+    padding-bottom: 6px;
+}
+
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+/* chevron: points down when closed, up when open */
+.faq-item summary::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    inset-inline-end: 18px;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--muted-text);
+    border-bottom: 2px solid var(--muted-text);
+    transform: translateY(-70%) rotate(45deg);
+    transition: transform 150ms;
+}
+
+.faq-item[open] summary::after {
+    transform: translateY(-30%) rotate(225deg);
+}
+
+/* inset, because the card clips anything drawn outside it */
+.faq-item summary:focus-visible {
+    outline: 2px solid var(--cta-color);
+    outline-offset: -3px;
+    border-radius: 12px;
+}
+
+.faq-item p {
+    margin: 0;
+    padding: 0 16px 14px;
+    font-size: 13px;
+    line-height: 19px;
+    color: var(--muted-text);
+}
+
+/* language switch in the header: shows the language it switches to (हिं or EN) */
+#language-selector {
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    width: 40px;
+}
+
+.language-switch {
+    min-width: 22px;
+    padding: 2px 4px;
+    border: 2px solid currentColor;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 16px;
+    text-align: center;
+}

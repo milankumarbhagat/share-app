@@ -75,6 +75,35 @@ cd deploy && docker compose up -d --build
 
 If you change `.env`, run `sh generate-rtc-config.sh` again before `docker compose up -d`.
 
+## Automatic deploys
+
+Every push or merged pull request to `develop` redeploys the server through
+`.github/workflows/deploy.yml`. The workflow SSHes in with a key that may only run `~/deploy.sh`
+(a copy of `deploy/server-deploy.sh`), which checks out `develop`, rebuilds and waits for the containers.
+
+One-time setup:
+
+1. On the server: `cp ~/share-app/deploy/server-deploy.sh ~/deploy.sh`.
+2. Make a key for GitHub: `ssh-keygen -t ed25519 -f gha_deploy_key -N "" -C github-actions-deploy`.
+3. Add the public key to the server's `~/.ssh/authorized_keys`, limited to the deploy script:
+   `command="/home/ubuntu/deploy.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-ed25519 AAAA... github-actions-deploy`
+4. GitHub repo → Settings → Secrets and variables → Actions → add:
+   - `DEPLOY_HOST`: the static IP
+   - `DEPLOY_SSH_KEY`: contents of `gha_deploy_key` (the private key), then delete the local file
+   - `DEPLOY_KNOWN_HOSTS`: output of `ssh-keyscan -t ed25519 <static IP>`
+
+If you edit `deploy/server-deploy.sh`, copy it to `~/deploy.sh` on the server again.
+
+To deploy by hand from your own machine, run `dip deploy`. It needs this in `~/.ssh/config`:
+
+```
+Host nearshare
+    HostName <static IP>
+    User ubuntu
+    IdentityFile ~/.ssh/<your key>
+    IdentitiesOnly yes
+```
+
 ## Check the TURN server
 
 Open the [Trickle ICE](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/) test page, add

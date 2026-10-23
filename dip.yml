@@ -21,6 +21,12 @@ interaction:
     description: Follow the app container's logs
     command: docker logs -f pairdrop
 
+  deploy:
+    description: >-
+      Redeploy the pushed develop branch on the Lightsail server (same script GitHub Actions runs).
+      Needs a `nearshare` host in ~/.ssh/config; see deploy/README.md.
+    command: ssh nearshare ./deploy.sh
+
 provision:
   - dip compose build
   - dip up -d --wait
